@@ -1,29 +1,577 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Haltio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Haltio réunit ton carnet de muscu, ta récupération du matin et ta sèche sur ton iPhone. Pas de compte, pas de pub, rien ne quitte ton téléphone.">
+<meta property="og:title" content="Haltio : muscu et récup">
+<meta property="og:description" content="Ton carnet de muscu, ta récup du matin et ta sèche, au même endroit. Tout reste sur ton iPhone.">
+<meta property="og:url" content="https://haltio.fr/">
+<meta name="theme-color" content="#0C0E11">
+<!--FONTS-->
 <style>
-  :root { --bg: #ffffff; --text: #16181d; --muted: #5d6470; --accent: #5b3fd9; }
-  @media (prefers-color-scheme: dark) { :root { --bg: #0d0e12; --text: #eef0f4; --muted: #9aa1ad; --accent: #a694ff; } }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 -apple-system, system-ui, sans-serif; }
-  main { max-width: 680px; margin: 0 auto; padding: 64px 16px; }
-  h1 { font-size: 40px; letter-spacing: -0.02em; line-height: 1.1; margin: 0 0 12px; }
-  .lead { font-size: 20px; color: var(--muted); margin: 0 0 32px; }
-  a { color: var(--accent); }
-  footer { margin-top: 48px; color: var(--muted); font-size: 15px; }
+@font-face{font-family:"Inter";src:url("fonts/Inter.ttf") format("truetype");font-weight:100 900;font-display:swap}
+@font-face{font-family:"Space Grotesk";src:url("fonts/SpaceGrotesk.ttf") format("truetype");font-weight:300 700;font-display:swap}
+/*FONTS-END*/
+/* Mise en page : une seule colonne qui alterne texte et écrans de l'app, comme on fait défiler Haltio. Sombre, comme l'app. */
+:root{
+  --bg:#0C0E11; --raise:#111419; --card:#15181D; --stroke:#20242A; --band:#23272E;
+  --text:#F1F2F4; --soft:#C9CED6; --sec:#9AA1AC; --muted:#3A3F48;
+  --accent:#A694FF; --fill:#7457F5; --dim:#231D45;
+  --green:#6FD468; --yellow:#FFB648; --red:#FF7A7A; --teal:#4FD1C5;
+  --display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --body:"Inter",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --wrap:1120px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--text);font:400 17px/1.55 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.035em;text-wrap:balance;margin:0}
+h1{font-size:clamp(44px,8vw,88px);line-height:.98}
+h2{font-size:clamp(34px,5.4vw,60px);line-height:1.02}
+h3{font-size:24px;line-height:1.15;letter-spacing:-.02em}
+em{font-style:normal;color:var(--accent)}
+p{margin:0}
+.lead{font-size:clamp(18px,2vw,21px);color:var(--sec);max-width:34em}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* Barre du haut */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid transparent}
+.top .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.logo{display:flex;align-items:center;text-decoration:none}
+.logo svg{height:26px;width:auto;display:block}
+.nav{display:flex;gap:24px;margin-left:auto;font-size:15px;color:var(--sec)}
+.nav a{text-decoration:none}
+.nav a:hover{color:var(--text)}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--fill);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:11px 18px;border-radius:999px;white-space:nowrap;transition:background .15s}
+.btn:hover{background:#8468ff}
+.btn.big{font-size:17px;padding:16px 26px}
+.btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--stroke)}
+.btn.ghost:hover{background:var(--band)}
+@media (max-width:720px){.nav{display:none}.top .btn{margin-left:auto}}
+
+/* Héros */
+.hero{padding-block:72px 40px;text-align:center;position:relative}
+.hero::before{content:"";position:absolute;inset:-64px 0 auto;height:720px;background:radial-gradient(60% 55% at 50% 30%,color-mix(in srgb,var(--fill) 26%,transparent),transparent 70%);pointer-events:none;z-index:-1}
+.hero h1{max-width:12ch;margin:22px auto 0}
+.hero .lead{margin:22px auto 0;max-width:30em}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+.note{margin-top:14px;font-size:14px;color:var(--sec)}
+.badge{display:inline-flex;gap:8px;align-items:center;background:var(--dim);color:var(--accent);font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px}
+.badge i{width:7px;height:7px;border-radius:50%;background:var(--accent);display:block}
+
+/* Téléphones */
+.phones{display:flex;justify-content:center;align-items:flex-start;margin-top:64px;height:700px;position:relative}
+.phone{width:290px;flex:none;height:600px;background:var(--bg);border:9px solid #1d2026;outline:1px solid #2b2f37;border-radius:52px;padding:52px 16px 16px;position:relative;overflow:hidden;text-align:left;box-shadow:0 40px 80px -30px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.03) inset}
+.phone::before{content:"";position:absolute;top:12px;left:50%;width:92px;height:26px;margin-left:-46px;background:#000;border-radius:20px}
+.phone.l,.phone.r{margin-top:56px;opacity:.96}
+.phone.l{transform:rotate(-6deg) translateX(38px);z-index:1}
+.phone.r{transform:rotate(6deg) translateX(-38px);z-index:1}
+.phone.c{z-index:2}
+.phones .phone{animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
+.phones .phone.l{animation-delay:.08s}.phones .phone.r{animation-delay:.16s}
+@keyframes rise{from{translate:0 24px}to{translate:0 0}}
+@media (max-width:960px){.phones{height:620px}.phone.l,.phone.r{display:none}}
+@media (max-width:360px){.phones .phone{transform:scale(.9);transform-origin:top center}}
+
+/* Contenu des écrans */
+.s-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.s-h b{font-family:var(--display);font-size:24px;letter-spacing:-.03em}
+.s-h span{font-size:12px;color:var(--sec)}
+.sc{background:var(--card);border:1px solid var(--stroke);border-radius:18px;padding:13px 14px}
+.stack{display:flex;flex-direction:column;gap:9px}
+.lbl{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sec)}
+.ring{position:relative;width:168px;height:168px;margin:6px auto 4px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .v{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .v b{font-family:var(--display);font-size:52px;line-height:1;letter-spacing:-.04em}
+.ring .v span{font-size:12px;color:var(--sec);margin-top:4px}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.trio .sc{padding:10px;text-align:left}
+.trio b{display:block;font-family:var(--display);font-size:19px;letter-spacing:-.02em;margin-top:3px}
+.trio small{font-size:10.5px;color:var(--sec)}
+.up{color:var(--green)}
+.go{display:flex;gap:10px;align-items:center}
+.go i{width:9px;height:9px;border-radius:50%;flex:none;display:block}
+.go b{font-size:13.5px;font-weight:600}
+.go p{font-size:11.5px;color:var(--sec)}
+.ex{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:-.03em;margin:3px 0 1px}
+.tip{display:flex;gap:9px;align-items:center;background:var(--dim);border-radius:14px;padding:10px 11px;font-size:11.5px;line-height:1.35;color:var(--soft)}
+.tip .ap{background:var(--fill);color:#fff;font-weight:600;font-size:11px;padding:6px 9px;border-radius:999px;margin-left:auto;flex:none}
+.steppers{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.step{background:var(--card);border:1px solid var(--stroke);border-radius:16px;padding:10px;text-align:center}
+.step .row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.step .row b{font-family:var(--display);font-size:30px;letter-spacing:-.03em}
+.step .row i{width:28px;height:28px;border-radius:50%;background:var(--band);display:flex;align-items:center;justify-content:center;font-style:normal;color:var(--soft);font-size:17px}
+.valid{background:var(--fill);color:#fff;text-align:center;font-weight:600;font-size:14px;padding:13px;border-radius:14px}
+.set{display:flex;align-items:center;gap:10px;font-size:13px;padding:7px 2px;border-top:1px solid var(--stroke)}
+.set:first-child{border-top:0}
+.set .k{width:22px;height:22px;border-radius:7px;background:var(--dim);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.set .ok{margin-left:auto;color:var(--green);font-size:12px}
+.big2{font-family:var(--display);font-size:40px;font-weight:700;letter-spacing:-.04em;line-height:1}
+.chart svg{width:100%;height:auto;display:block}
+.bar{height:8px;border-radius:4px;background:var(--band);overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;border-radius:4px}
+.split{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px}
+.split span{color:var(--sec)}
+
+/* Bande « fonctionne avec » */
+.with{padding-block:28px 8px}
+.with .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:center;align-items:center;color:var(--sec);font-size:15px}
+.with .t{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.with b{color:var(--soft);font-weight:600}
+
+/* Sections */
+section.blk{padding-block:120px 0}
+.head{text-align:center;display:flex;flex-direction:column;align-items:center;gap:18px}
+.head .lead{text-align:center}
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;margin-top:72px}
+.feat + .feat{margin-top:96px}
+.feat .txt{display:flex;flex-direction:column;gap:16px;min-width:0}
+.feat .txt p{color:var(--sec);max-width:28em}
+.feat.flip .txt{order:2}
+.feat .vis{min-width:0;background:var(--raise);border:1px solid var(--stroke);border-radius:32px;padding:32px;display:flex;flex-direction:column;gap:12px}
+.points{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;color:var(--soft);font-size:16px}
+.points li{display:flex;gap:12px;align-items:flex-start}
+.points li::before{content:"";width:6px;height:6px;border-radius:2px;background:var(--accent);margin-top:9px;flex:none}
+@media (max-width:860px){.feat{grid-template-columns:1fr;gap:28px}.feat.flip .txt{order:0}.feat .vis{padding:20px;border-radius:24px}}
+
+/* Visuels des sections */
+.zone{display:flex;align-items:center;gap:18px;background:var(--card);border:1px solid var(--stroke);border-radius:20px;padding:18px 20px}
+.zone .r{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.03em;width:96px;flex:none;font-variant-numeric:tabular-nums}
+.zone b{display:block;font-size:16px}
+.zone span{font-size:14px;color:var(--sec)}
+.zone i{width:12px;height:12px;border-radius:50%;flex:none;display:block}
+.gauge{display:flex;align-items:flex-end;gap:14px}
+.gauge .big2{font-size:64px}
+.gauge span{color:var(--sec);font-size:18px;padding-bottom:8px}
+.scale{display:grid;grid-template-columns:repeat(21,1fr);gap:3px;margin-top:4px}
+.scale i{height:30px;border-radius:4px;background:var(--band);display:block}
+.scale i.on{background:var(--teal)}
+.scale i.tg{outline:2px solid var(--accent);outline-offset:2px}
+.legend{display:flex;justify-content:space-between;font-size:13px;color:var(--sec)}
+.week{display:flex;flex-direction:column;gap:8px}
+.day{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--stroke);border-radius:16px;padding:12px 16px}
+.day .d{width:34px;font-size:13px;color:var(--sec);font-weight:600}
+.day b{font-size:15px;display:block}
+.day span{font-size:13px;color:var(--sec)}
+.day .w{margin-left:auto;font-size:13px;color:var(--sec);white-space:nowrap}
+.day.today{background:var(--dim);border-color:transparent}
+.day.today .d{color:var(--accent)}
+
+/* Coach */
+.coach{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:64px}
+.ccard{background:var(--raise);border:1px solid var(--stroke);border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.ccard h3{font-size:21px}
+.ccard > p{color:var(--sec);font-size:15px}
+.bub{background:var(--card);border:1px solid var(--stroke);border-radius:20px 20px 20px 6px;padding:14px 16px;font-size:14.5px;line-height:1.45;color:var(--soft);margin-top:auto}
+.bub .who{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:600;color:var(--accent);margin-bottom:6px}
+.bub .who svg{width:14px;height:14px}
+.req{font-size:14px;color:var(--sec);text-align:center;margin-top:24px}
+@media (max-width:900px){.coach{grid-template-columns:1fr}}
+
+/* Liste */
+.more{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--stroke);border:1px solid var(--stroke);border-radius:28px;overflow:hidden;margin-top:64px}
+.more div{background:var(--bg);padding:26px 24px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.more b{font-size:16px;font-weight:600}
+.more span{font-size:14.5px;color:var(--sec)}
+@media (max-width:900px){.more{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.more{grid-template-columns:1fr}}
+
+/* Confidentialité */
+.priv{margin-top:120px;background:var(--fill);color:#fff}
+.priv .wrap{padding-block:96px;display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center}
+.priv h2 em{color:var(--bg)}
+.priv .lead{color:rgba(255,255,255,.86);margin-top:20px}
+.priv ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.priv li{display:flex;gap:16px;align-items:flex-start;padding:18px 0;border-top:1px solid rgba(255,255,255,.22)}
+.priv li:first-child{border-top:0}
+.priv li b{display:block;font-size:17px}
+.priv li span{font-size:15px;color:rgba(255,255,255,.82)}
+.priv li svg{flex:none;margin-top:2px}
+@media (max-width:860px){.priv .wrap{grid-template-columns:1fr;padding-block:72px;gap:32px}}
+
+/* Prix */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:64px;max-width:880px;margin-inline:auto}
+.plan{background:var(--raise);border:1px solid var(--stroke);border-radius:28px;padding:30px;display:flex;flex-direction:column;gap:18px}
+.plan.plus{border-color:color-mix(in srgb,var(--accent) 45%,var(--stroke));background:linear-gradient(180deg,var(--dim),var(--raise) 60%)}
+.plan .p{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.plan .p .big2{font-size:44px}
+.plan .p span{color:var(--sec);font-size:15px}
+.plan ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;font-size:15.5px;color:var(--soft)}
+.plan li{display:flex;gap:10px;align-items:flex-start}
+.plan li svg{flex:none;margin-top:3px}
+.plan small{color:var(--sec);font-size:13.5px}
+@media (max-width:760px){.plans{grid-template-columns:1fr}}
+
+/* Fin */
+.end{text-align:center;padding-block:140px 120px;position:relative}
+.end::before{content:"";position:absolute;inset:0;background:radial-gradient(50% 60% at 50% 60%,color-mix(in srgb,var(--fill) 22%,transparent),transparent 70%);z-index:-1}
+.end h2{max-width:14ch;margin:0 auto}
+.end .lead{margin:20px auto 0}
+footer{border-top:1px solid var(--stroke);padding-block:48px 56px;color:var(--sec);font-size:14px}
+footer .wrap{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:32px}
+footer .col{display:flex;flex-direction:column;gap:10px;min-width:0}
+footer .col b{color:var(--text);font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+footer a{text-decoration:none}
+footer a:hover{color:var(--text)}
+footer .fine{grid-column:1/-1;border-top:1px solid var(--stroke);padding-top:24px;font-size:13px;line-height:1.6}
+@media (max-width:760px){footer .wrap{grid-template-columns:1fr 1fr}footer .brand{grid-column:1/-1}}
 </style>
 </head>
 <body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#" aria-label="Haltio, accueil">
+      <svg viewBox="0 0 830 256" aria-hidden="true"><path d="M74 50V206M74 138A54 54 0 0 1 182 138V158" fill="none" stroke="#F1F2F4" stroke-width="38" stroke-linecap="round"/><circle cx="182" cy="206" r="19" fill="#7457F5"/><g transform="translate(290 0)"><g fill="none" stroke="#F1F2F4" stroke-width="22"><path d="M51 50V200M51 150A39 39 0 0 1 129 150V200"/><circle cx="212" cy="150" r="39"/><path d="M251 111V200"/><path d="M299 50V200"/><path d="M349 70V200M324 111H374"/><path d="M399 111V200"/><circle cx="480" cy="150" r="39"/></g><circle cx="399" cy="72" r="13" fill="#7457F5"/></g></svg>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#recup">Récup</a>
+      <a href="#carnet">Carnet</a>
+      <a href="#coach">Coach</a>
+      <a href="#prix">Prix</a>
+    </nav>
+    <a class="btn" href="https://testflight.apple.com/join/1pXuV6V6">Rejoindre la bêta</a>
+  </div>
+</header>
+
 <main>
-  <h1>Haltio</h1>
-  <p class="lead">Recovery, training and daily health in one place, on your iPhone.</p>
-  <p>Haltio brings together your sleep, heart rate variability, resting heart rate, weight and workouts from Apple Health, with a training log, strength routines and weekly goals. Everything is processed on your iPhone: no account, no ads, no tracking.</p>
-  <p>Coming soon to the App Store.</p>
-  <footer>
-    <p><a href="privacy.html">Privacy Policy</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="mailto:melheb.younes@gmail.com">Contact</a></p>
-  </footer>
+  <section class="hero">
+    <div class="wrap">
+      <span class="badge"><i></i>Bêta ouverte sur iPhone</span>
+      <h1>Ta muscu, ta récup, <em>ta sèche.</em></h1>
+      <p class="lead">Haltio lit ton sommeil, ta VFC et ton poids dans Apple Santé, te dit chaque matin si tu peux pousser, et garde ton carnet de séance. Tout reste sur ton iPhone.</p>
+      <div class="cta">
+        <a class="btn big" href="https://testflight.apple.com/join/1pXuV6V6">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v11.2l4.3-4.3 1.4 1.4L12 17l-5.7-5.7 1.4-1.4 4.3 4.3V3h2ZM5 19h14v2H5v-2Z"/></svg>
+          Installer la bêta
+        </a>
+        <a class="btn big ghost" href="#recup">Voir ce qu'elle fait</a>
+      </div>
+      <p class="note">Gratuit pendant la bêta, via TestFlight. Bientôt sur l'App Store.</p>
+
+      <div class="phones" aria-hidden="true">
+        <!-- Carnet -->
+        <div class="phone l">
+          <div class="s-h"><b>Séance</b><span>Haut du corps · 42 min</span></div>
+          <div class="stack">
+            <div class="sc">
+              <div class="lbl">Exercice 2 sur 6 · Série 2 sur 3</div>
+              <div class="ex">Développé couché</div>
+              <div style="font-size:11.5px;color:var(--sec)">1RM estimé 96 kg · meilleure série 80 × 6</div>
+            </div>
+            <div class="tip">Toutes tes séries passées à 80 kg : passe à 82,5 kg.<span class="ap">Appliquer</span></div>
+            <div class="steppers">
+              <div class="step"><div class="lbl">Charge</div><div class="row"><i>−</i><b>80</b><i>+</i></div></div>
+              <div class="step"><div class="lbl">Reps</div><div class="row"><i>−</i><b>8</b><i>+</i></div></div>
+            </div>
+            <div class="valid">Valider la série</div>
+            <div class="sc" style="padding:6px 12px">
+              <div class="set"><span class="k">1</span><span class="num">80 kg × 8</span><span class="ok">✓ fait</span></div>
+              <div class="set"><span class="k">2</span><span class="num" style="color:var(--sec)">80 kg × 8</span></div>
+              <div class="set"><span class="k">3</span><span class="num" style="color:var(--sec)">80 kg × 8</span></div>
+            </div>
+            <div class="sc" style="display:flex;justify-content:space-between;align-items:center;font-size:12.5px"><span style="color:var(--sec)">Repos</span><b class="num" style="font-size:20px">1:24</b></div>
+          </div>
+        </div>
+        <!-- Récup -->
+        <div class="phone c">
+          <div class="s-h"><b>Aujourd'hui</b><span>mar. 28 oct.</span></div>
+          <div class="stack">
+            <div class="sc" style="padding-bottom:16px">
+              <div class="lbl">Récupération</div>
+              <div class="ring">
+                <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="#23272E" stroke-width="10"/><circle cx="60" cy="60" r="52" fill="none" stroke="#6FD468" stroke-width="10" stroke-linecap="round" stroke-dasharray="254.8 326.7"/></svg>
+                <div class="v"><b class="num">78</b><span>sur 100</span></div>
+              </div>
+              <div class="go"><i style="background:var(--green)"></i><div><b>Prêt pour une séance intense</b><p>C'est le jour pour viser un record.</p></div></div>
+            </div>
+            <div class="trio">
+              <div class="sc"><small>VFC</small><b class="num">62<small> ms</small></b><small class="up">+8 %</small></div>
+              <div class="sc"><small>FC repos</small><b class="num">51<small> bpm</small></b><small class="up">−2</small></div>
+              <div class="sc"><small>Sommeil</small><b class="num">7:42</b><small style="color:var(--sec)">couché 23:10</small></div>
+            </div>
+            <div class="sc split"><span>Effort du jour</span><b class="num" style="font-size:18px">6,4 <small style="color:var(--sec);font-weight:400">/ 21</small></b></div>
+            <div class="sc split"><span>Prévu</span><b style="font-size:13.5px">Jambes · 6 exercices</b></div>
+          </div>
+        </div>
+        <!-- Poids -->
+        <div class="phone r">
+          <div class="s-h"><b>Poids</b><span>Sèche · semaine 6</span></div>
+          <div class="stack">
+            <div class="sc">
+              <div class="lbl">Tendance</div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><span class="big2 num">78,4</span><span style="color:var(--sec);font-size:13px">kg</span><span class="up" style="font-size:13px;margin-left:auto">−0,5 kg / sem.</span></div>
+              <div class="chart" style="margin-top:12px">
+                <svg viewBox="0 0 240 110">
+                  <line x1="0" y1="96" x2="240" y2="96" stroke="#20242A"/>
+                  <line x1="0" y1="56" x2="240" y2="56" stroke="#20242A"/>
+                  <line x1="0" y1="16" x2="240" y2="16" stroke="#20242A"/>
+                  <g fill="#3A3F48"><circle cx="6" cy="22" r="2.5"/><circle cx="23" cy="30" r="2.5"/><circle cx="40" cy="18" r="2.5"/><circle cx="57" cy="34" r="2.5"/><circle cx="74" cy="40" r="2.5"/><circle cx="91" cy="32" r="2.5"/><circle cx="108" cy="48" r="2.5"/><circle cx="125" cy="52" r="2.5"/><circle cx="142" cy="44" r="2.5"/><circle cx="159" cy="62" r="2.5"/><circle cx="176" cy="66" r="2.5"/><circle cx="193" cy="58" r="2.5"/><circle cx="210" cy="74" r="2.5"/><circle cx="227" cy="78" r="2.5"/></g>
+                  <path d="M6 24 C40 28 70 34 108 44 S180 62 230 76" fill="none" stroke="#A694FF" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="230" cy="76" r="5" fill="#A694FF" stroke="#15181D" stroke-width="2"/>
+                </svg>
+              </div>
+              <div class="split" style="margin-top:6px"><span>il y a 14 jours</span><span>aujourd'hui</span></div>
+            </div>
+            <div class="sc">
+              <div class="split"><span>Objectif</span><b>75 kg · fin janvier</b></div>
+              <div class="bar"><i style="width:64%;background:var(--accent)"></i></div>
+            </div>
+            <div class="sc">
+              <div class="split"><span>Protéines</span><b class="num">118 / 150 g</b></div>
+              <div class="bar"><i style="width:79%;background:var(--teal)"></i></div>
+              <div class="split" style="margin-top:10px"><span>Calories</span><b class="num">1 640 / 2 100</b></div>
+              <div class="bar"><i style="width:78%;background:var(--yellow)"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="with">
+    <div class="wrap">
+      <span class="t">Fonctionne avec</span>
+      <b>Apple Santé</b><b>Apple Watch</b><b>Garmin</b><span>et toute montre qui écrit dans Santé</span>
+    </div>
+  </div>
+
+  <section class="blk" id="recup">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Le matin</span>
+        <h2>Sache en ouvrant l'app<br>si tu peux <em>pousser.</em></h2>
+        <p class="lead">Haltio croise ta nuit, ta VFC et ta fréquence cardiaque au repos pour donner une récup sur 100. La séance du jour s'adapte à la zone.</p>
+      </div>
+
+      <div class="feat">
+        <div class="txt">
+          <span class="eyebrow">Récupération</span>
+          <h3>Trois zones, trois façons de s'entraîner.</h3>
+          <p>Vert, tu vises un record. Jaune, tu t'entraînes un cran en dessous. Rouge, tu marches, tu t'étires et tu dors. Ce sont des repères pour doser, pas un avis médical.</p>
+        </div>
+        <div class="vis">
+          <div class="zone"><i style="background:var(--green)"></i><span class="r" style="color:var(--green)">67–100</span><div><b>Prêt pour une séance intense</b><span>C'est le jour pour viser un record.</span></div></div>
+          <div class="zone"><i style="background:var(--yellow)"></i><span class="r" style="color:var(--yellow)">34–66</span><div><b>Séance allégée</b><span>Tu t'entraînes, un cran en dessous.</span></div></div>
+          <div class="zone"><i style="background:var(--red)"></i><span class="r" style="color:var(--red)">0–33</span><div><b>Priorité à la récupération</b><span>Marche, mobilité et une bonne nuit.</span></div></div>
+        </div>
+      </div>
+
+      <div class="feat flip">
+        <div class="txt">
+          <span class="eyebrow">Effort</span>
+          <h3>L'effort du jour, sur 21.</h3>
+          <p>Chaque séance, course ou sortie vélo remplit la jauge selon ta fréquence cardiaque. Haltio te propose une cible d'après ta récup, pour éviter d'en faire trop deux jours de suite.</p>
+        </div>
+        <div class="vis">
+          <div class="gauge"><span class="big2 num" style="color:var(--teal)">11,8</span><span>/ 21 · cible 12</span></div>
+          <div class="scale" aria-hidden="true">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="tg"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <div class="legend"><span>Léger</span><span>Modéré</span><span>Intense</span></div>
+          <div class="day" style="margin-top:6px"><span class="d">09:12</span><div><b>Séance jambes</b><span>58 min · FC moy. 128</span></div><span class="w num">+8,9</span></div>
+          <div class="day"><span class="d">18:40</span><div><b>Marche</b><span>34 min · 3,1 km</span></div><span class="w num">+2,9</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk" id="carnet">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">À la salle</span>
+        <h2>Tes séries, <em>en deux touches.</em></h2>
+        <p class="lead">Un carnet pensé pour être rempli entre deux séries : la charge et les reps de la dernière fois sont déjà là.</p>
+      </div>
+
+      <div class="feat">
+        <div class="txt">
+          <span class="eyebrow">Carnet de muscu</span>
+          <h3>Tu notes, Haltio fait les comptes.</h3>
+          <ul class="points">
+            <li>Charge, reps et RPE, échauffements, dégressives et séries à l'échec.</li>
+            <li>Minuteur de repos, supersets et calculateur de disques.</li>
+            <li>Records, 1RM estimé et volume par muscle, exercice par exercice.</li>
+            <li>Routines prêtes (full body, haut/bas, push/pull/legs) ou les tiennes.</li>
+          </ul>
+        </div>
+        <div class="vis">
+          <div class="lbl">Squat · historique</div>
+          <div class="day"><span class="d">Lun</span><div><b class="num">100 kg × 8 · 8 · 7</b><span>1RM estimé 124 kg</span></div><span class="w" style="color:var(--accent)">Record</span></div>
+          <div class="day"><span class="d">Jeu</span><div><b class="num">97,5 kg × 8 · 8 · 8</b><span>Volume 2 340 kg</span></div></div>
+          <div class="day"><span class="d">Lun</span><div><b class="num">95 kg × 8 · 8 · 8</b><span>Volume 2 280 kg</span></div></div>
+          <div class="tip" style="font-size:14px;padding:14px 16px">Toutes tes séries passées à 100 kg : passe à 102,5 kg.<span class="ap" style="font-size:13px">Appliquer</span></div>
+        </div>
+      </div>
+
+      <div class="feat flip">
+        <div class="txt">
+          <span class="eyebrow">Ta semaine</span>
+          <h3>Tes créneaux, et la météo.</h3>
+          <p>Haltio place tes séances dans ta semaine, propose une sortie dehors quand il fait beau et une séance en salle quand il pleut.</p>
+        </div>
+        <div class="vis week">
+          <div class="day today"><span class="d">Mar</span><div><b>Jambes</b><span>60 min · 6 exercices</span></div><span class="w">Aujourd'hui</span></div>
+          <div class="day"><span class="d">Mer</span><div><b>Marche rapide dehors</b><span>40 min · ensoleillé, 14°</span></div><span class="w">☀︎</span></div>
+          <div class="day"><span class="d">Jeu</span><div><b>Haut du corps</b><span>55 min · 7 exercices</span></div></div>
+          <div class="day"><span class="d">Sam</span><div><b>Vélo zone 2</b><span>45 min · FC 120–135</span></div><span class="w">☁︎</span></div>
+        </div>
+      </div>
+
+      <div class="feat">
+        <div class="txt">
+          <span class="eyebrow">Poids et sèche</span>
+          <h3>La tendance, pas le chiffre du matin.</h3>
+          <p>Le poids bouge d'un kilo d'un jour à l'autre. Haltio lisse ces variations, te donne ton rythme par semaine, tes calories et tes protéines du jour, et compare tes photos de progression côte à côte.</p>
+        </div>
+        <div class="vis">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="big2 num" style="font-size:52px">−3,1</span><span style="color:var(--sec)">kg en 6 semaines</span></div>
+          <div class="chart">
+            <svg viewBox="0 0 420 150" role="img" aria-label="Courbe de poids qui descend de 81,5 à 78,4 kg en six semaines">
+              <g stroke="#20242A"><line x1="40" y1="20" x2="420" y2="20"/><line x1="40" y1="70" x2="420" y2="70"/><line x1="40" y1="120" x2="420" y2="120"/></g>
+              <g fill="#9AA1AC" font-size="11" font-family="Inter,system-ui,sans-serif"><text x="0" y="24">82 kg</text><text x="0" y="74">80 kg</text><text x="0" y="124">78 kg</text></g>
+              <g fill="#3A3F48"><circle cx="48" cy="30" r="3"/><circle cx="74" cy="42" r="3"/><circle cx="100" cy="36" r="3"/><circle cx="126" cy="50" r="3"/><circle cx="152" cy="46" r="3"/><circle cx="178" cy="64" r="3"/><circle cx="204" cy="58" r="3"/><circle cx="230" cy="74" r="3"/><circle cx="256" cy="82" r="3"/><circle cx="282" cy="76" r="3"/><circle cx="308" cy="94" r="3"/><circle cx="334" cy="98" r="3"/><circle cx="360" cy="102" r="3"/><circle cx="386" cy="112" r="3"/><circle cx="410" cy="108" r="3"/></g>
+              <path d="M48 32 C120 44 180 60 240 74 S360 104 410 110" fill="none" stroke="#A694FF" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="410" cy="110" r="6" fill="#A694FF" stroke="#111419" stroke-width="3"/>
+            </svg>
+          </div>
+          <div class="legend"><span>Pesées</span><span style="color:var(--accent)">Tendance · 78,4 kg</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk" id="coach">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Haltio+ · Coach</span>
+        <h2>Un coach qui tourne<br><em>sur ton iPhone.</em></h2>
+        <p class="lead">Il lit ta récup, ton carnet et ta semaine, et te répond avec Apple Intelligence, directement sur l'appareil. Rien n'est envoyé ailleurs.</p>
+      </div>
+      <div class="coach">
+        <div class="ccard">
+          <h3>Le plan de la semaine</h3>
+          <p>Tes jours dispos, ton objectif et ta récup donnent un plan qu'il ajuste au fil des jours.</p>
+          <div class="bub"><div class="who"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9l-5.6 1.9L12 16.5l-1.9-5.6L4.5 9l5.6-1.4L12 2Zm6 12 1 2.8 2.8 1.2-2.8 1L18 22l-1-2.8-2.8-1L17 17l1-3Z"/></svg>Coach</div>Récup à 41 ce matin : je décale les jambes à jeudi et je te mets 30 min de marche aujourd'hui.</div>
+        </div>
+        <div class="ccard">
+          <h3>Des séries à ta mesure</h3>
+          <p>Avant chaque séance, les charges sont proposées d'après tes dernières séries et ta forme du jour.</p>
+          <div class="bub"><div class="who"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9l-5.6 1.9L12 16.5l-1.9-5.6L4.5 9l5.6-1.4L12 2Zm6 12 1 2.8 2.8 1.2-2.8 1L18 22l-1-2.8-2.8-1L17 17l1-3Z"/></svg>Coach</div>Tu as fait 3 × 8 à 80 kg deux fois de suite. Aujourd'hui, essaie 82,5 kg sur la première série.</div>
+        </div>
+        <div class="ccard">
+          <h3>Un avis après la séance</h3>
+          <p>Ce qui a progressé, ce qui a coincé, et quoi changer la prochaine fois.</p>
+          <div class="bub"><div class="who"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9l-5.6 1.9L12 16.5l-1.9-5.6L4.5 9l5.6-1.4L12 2Zm6 12 1 2.8 2.8 1.2-2.8 1L18 22l-1-2.8-2.8-1L17 17l1-3Z"/></svg>Coach</div>Record au squat ! Le volume du dos baisse depuis deux semaines : ajoute une série de tirage jeudi.</div>
+        </div>
+      </div>
+      <p class="req">Le coach demande un iPhone compatible avec Apple Intelligence (iPhone 15 Pro ou plus récent).</p>
+    </div>
+  </section>
+
+  <section class="blk">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Et aussi</span>
+        <h2>Le reste tient <em>dans la poche.</em></h2>
+      </div>
+      <div class="more">
+        <div><b>Courses et vélo</b><span>Carte, allure au kilomètre et zones cardiaques, depuis Apple Santé.</span></div>
+        <div><b>Tendances</b><span>Ta semaine en un coup d'œil, et tes courbes sur 7, 30 et 90 jours.</span></div>
+        <div><b>Protéines</b><span>Scanne un code-barres ou garde tes recettes, en quelques secondes.</span></div>
+        <div><b>Programmes</b><span>Des cycles sur plusieurs semaines, avec une semaine type.</span></div>
+        <div><b>Douleurs</b><span>Note une gêne et retrouve les exercices à adapter.</span></div>
+        <div><b>Routine du soir</b><span>Pour préparer la nuit qui fera ta récup du lendemain.</span></div>
+        <div><b>Widgets</b><span>Ta récup et ton effort sur l'écran d'accueil.</span></div>
+        <div><b>Raccourcis</b><span>Ajoute des protéines avec Siri, sans ouvrir l'app.</span></div>
+        <div><b>Récap du mois</b><span>Tes séances, tes records et ton poids, en une page.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="priv" id="confidentialite">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow" style="color:rgba(255,255,255,.8)">Confidentialité</span>
+        <h2 style="margin-top:16px">Tes données restent <em>chez toi.</em></h2>
+        <p class="lead">Ton sommeil, ton cœur et ton poids ne regardent que toi. Haltio enregistre et calcule tout sur ton iPhone, y compris le coach.</p>
+      </div>
+      <ul>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6M3 3l18 18"/></svg><div><b>Pas de compte</b><span>Pas d'inscription, pas de mot de passe.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 3l18 18"/></svg><div><b>Pas de pub</b><span>Rien à vendre à part l'app elle-même.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><path d="M3 3l18 18"/></svg><div><b>Pas de pistage</b><span>Aucune mesure d'audience dans l'app.</span></div></li>
+        <li><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg><div><b>Calculé sur l'iPhone</b><span>Récup, effort, tendances et coach tournent sur ton téléphone.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="blk" id="prix">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow">Prix</span>
+        <h2>Gratuit pour commencer.</h2>
+        <p class="lead">Le carnet et la récup du jour sont gratuits. Haltio+ ajoute le coach et tout le reste.</p>
+      </div>
+      <div class="plans">
+        <div class="plan">
+          <div><h3>Haltio</h3><small>Pour tout le monde</small></div>
+          <div class="p"><span class="big2 num">0 €</span></div>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD468" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Carnet de muscu complet</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD468" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Récup et effort du jour</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD468" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>4 routines prêtes</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6FD468" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Poids et activités d'Apple Santé</li>
+          </ul>
+        </div>
+        <div class="plan plus">
+          <div><h3>Haltio+</h3><small>Sans engagement, annulable à tout moment</small></div>
+          <div class="p"><span class="big2 num">29,99 €</span><span>par an, ou 4,99 € par mois</span></div>
+          <ul>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A694FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Le coach avec Apple Intelligence</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A694FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Routines illimitées et programmes</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A694FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Tendances complètes et récap du mois</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A694FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>Sèche avancée, nutrition, douleurs</li>
+          </ul>
+          <small>Pendant la bêta, Haltio+ est offert.</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="end">
+    <div class="wrap">
+      <h2>Ta prochaine séance commence <em>ici.</em></h2>
+      <p class="lead">Installe la bêta avec TestFlight et dis-nous ce que tu en penses.</p>
+      <div class="cta">
+        <a class="btn big" href="https://testflight.apple.com/join/1pXuV6V6">Installer la bêta</a>
+        <a class="btn big ghost" href="https://www.instagram.com/haltio.sport/">Suivre @haltio.sport</a>
+      </div>
+    </div>
+  </section>
 </main>
+
+<footer>
+  <div class="wrap">
+    <div class="col brand">
+      <svg viewBox="0 0 830 256" style="height:24px;width:auto" aria-label="Haltio"><path d="M74 50V206M74 138A54 54 0 0 1 182 138V158" fill="none" stroke="#F1F2F4" stroke-width="38" stroke-linecap="round"/><circle cx="182" cy="206" r="19" fill="#7457F5"/><g transform="translate(290 0)"><g fill="none" stroke="#F1F2F4" stroke-width="22"><path d="M51 50V200M51 150A39 39 0 0 1 129 150V200"/><circle cx="212" cy="150" r="39"/><path d="M251 111V200"/><path d="M299 50V200"/><path d="M349 70V200M324 111H374"/><path d="M399 111V200"/><circle cx="480" cy="150" r="39"/></g><circle cx="399" cy="72" r="13" fill="#7457F5"/></g></svg>
+      <span>Muscu et récup, sur iPhone.</span>
+    </div>
+    <div class="col"><b>App</b><a href="#recup">Récup</a><a href="#carnet">Carnet</a><a href="#coach">Coach</a><a href="#prix">Prix</a></div>
+    <div class="col"><b>Aide</b><a href="https://testflight.apple.com/join/1pXuV6V6">Bêta TestFlight</a><a href="mailto:melheb.younes@gmail.com">Contact</a><a href="https://www.instagram.com/haltio.sport/">Instagram</a></div>
+    <div class="col"><b>Légal</b><a href="confidentialite.html">Confidentialité</a><a href="privacy.html">Privacy policy</a></div>
+    <p class="fine">© 2026 Haltio. Haltio ne remplace pas un avis médical : ses scores sont des repères pour doser l'entraînement, pas un diagnostic. Apple, Apple Watch et Apple Santé sont des marques d'Apple Inc. ; Garmin est une marque de Garmin Ltd.</p>
+  </div>
+</footer>
 </body>
 </html>
